@@ -808,6 +808,10 @@ type ConditionalAccessClearBypassesFunc func(ctx context.Context) error
 
 type ConditionalAccessBypassedAtFunc func(ctx context.Context, hostID uint) (*time.Time, error)
 
+type SetHostGoogleDeviceIDFunc func(ctx context.Context, hostID uint, googleDeviceID string) (bool, error)
+
+type GetHostGoogleDeviceIDFunc func(ctx context.Context, hostID uint) (string, error)
+
 type AsyncBatchInsertPolicyMembershipFunc func(ctx context.Context, batch []fleet.PolicyMembershipResult) error
 
 type AsyncBatchUpdatePolicyTimestampFunc func(ctx context.Context, ids []uint, ts time.Time) error
@@ -3790,6 +3794,12 @@ type DataStore struct {
 
 	ConditionalAccessBypassedAtFunc        ConditionalAccessBypassedAtFunc
 	ConditionalAccessBypassedAtFuncInvoked bool
+
+	SetHostGoogleDeviceIDFunc        SetHostGoogleDeviceIDFunc
+	SetHostGoogleDeviceIDFuncInvoked bool
+
+	GetHostGoogleDeviceIDFunc        GetHostGoogleDeviceIDFunc
+	GetHostGoogleDeviceIDFuncInvoked bool
 
 	AsyncBatchInsertPolicyMembershipFunc        AsyncBatchInsertPolicyMembershipFunc
 	AsyncBatchInsertPolicyMembershipFuncInvoked bool
@@ -9245,6 +9255,20 @@ func (s *DataStore) ConditionalAccessBypassedAt(ctx context.Context, hostID uint
 	s.ConditionalAccessBypassedAtFuncInvoked = true
 	s.mu.Unlock()
 	return s.ConditionalAccessBypassedAtFunc(ctx, hostID)
+}
+
+func (s *DataStore) SetHostGoogleDeviceID(ctx context.Context, hostID uint, googleDeviceID string) (bool, error) {
+	s.mu.Lock()
+	s.SetHostGoogleDeviceIDFuncInvoked = true
+	s.mu.Unlock()
+	return s.SetHostGoogleDeviceIDFunc(ctx, hostID, googleDeviceID)
+}
+
+func (s *DataStore) GetHostGoogleDeviceID(ctx context.Context, hostID uint) (string, error) {
+	s.mu.Lock()
+	s.GetHostGoogleDeviceIDFuncInvoked = true
+	s.mu.Unlock()
+	return s.GetHostGoogleDeviceIDFunc(ctx, hostID)
 }
 
 func (s *DataStore) AsyncBatchInsertPolicyMembership(ctx context.Context, batch []fleet.PolicyMembershipResult) error {

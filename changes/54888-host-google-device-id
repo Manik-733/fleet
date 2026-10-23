@@ -1,0 +1,1 @@
+- Added a `PUT /api/v1/fleet/hosts/:id/google_device_id` endpoint (Fleet Premium) that binds an iOS, iPadOS, or Android host to its device ID in Google, and a `google_device_id` field in the host details response for those platforms. The Google device ID is shown on the host details page once set.

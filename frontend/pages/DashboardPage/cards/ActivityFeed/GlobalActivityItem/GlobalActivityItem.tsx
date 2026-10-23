@@ -687,6 +687,16 @@ const TAGGED_TEMPLATES = {
       </>
     );
   },
+  setHostGoogleDeviceId: (activity: IActivity) => {
+    return (
+      <>
+        {" "}
+        set the Google device ID for{" "}
+        <b>{activity.details?.host_display_name}</b> to{" "}
+        <b>{activity.details?.google_device_id}</b>.
+      </>
+    );
+  },
   rotatedHostRecoveryLockPassword: (activity: IActivity) => {
     return (
       <>
@@ -2742,6 +2752,9 @@ const getDetail = (activity: IActivity, isPremiumTier: boolean) => {
     }
     case ActivityType.SetHostRecoveryLockPassword: {
       return TAGGED_TEMPLATES.setHostRecoveryLockPassword(activity);
+    }
+    case ActivityType.SetHostGoogleDeviceId: {
+      return TAGGED_TEMPLATES.setHostGoogleDeviceId(activity);
     }
     case ActivityType.RotatedHostRecoveryLockPassword: {
       return TAGGED_TEMPLATES.rotatedHostRecoveryLockPassword(activity);

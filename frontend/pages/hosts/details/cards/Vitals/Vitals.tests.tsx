@@ -1685,3 +1685,44 @@ describe("Android vitals", () => {
     });
   });
 });
+
+describe("Google device ID vital", () => {
+  it.each(["ios", "ipados", "android"])(
+    "renders the Google device ID for %s hosts once it is set",
+    (platform) => {
+      const mockHost = createMockHost({
+        platform: platform as HostPlatform,
+        google_device_id: "c3d1a9e2-7b4f-4e8a-9f1d-2a6b8c0e4f12",
+      });
+
+      render(<Vitals vitalsData={mockHost} mdm={mockHost.mdm} />);
+
+      expect(screen.getByText("Google device ID")).toBeInTheDocument();
+      expect(
+        screen.getByText("c3d1a9e2-7b4f-4e8a-9f1d-2a6b8c0e4f12")
+      ).toBeInTheDocument();
+    }
+  );
+
+  it("hides the Google device ID until it is set", () => {
+    const mockHost = createMockHost({
+      platform: "ios",
+      google_device_id: "",
+    });
+
+    render(<Vitals vitalsData={mockHost} mdm={mockHost.mdm} />);
+
+    expect(screen.queryByText("Google device ID")).not.toBeInTheDocument();
+  });
+
+  it("hides the Google device ID on other platforms", () => {
+    const mockHost = createMockHost({
+      platform: "darwin",
+      google_device_id: "c3d1a9e2-7b4f-4e8a-9f1d-2a6b8c0e4f12",
+    });
+
+    render(<Vitals vitalsData={mockHost} mdm={mockHost.mdm} />);
+
+    expect(screen.queryByText("Google device ID")).not.toBeInTheDocument();
+  });
+});

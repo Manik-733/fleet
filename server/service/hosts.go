@@ -18,6 +18,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/fleetdm/fleet/v4/server"
 	"github.com/fleetdm/fleet/v4/server/authz"
@@ -2283,6 +2284,15 @@ func (svc *Service) getHostDetails(ctx context.Context, host *fleet.Host, opts f
 	}
 	conditionalAccessBypassed := conditionalAccessBypassedAt != nil
 
+	var googleDeviceID *string
+	if fleet.IsMobilePlatform(host.Platform) {
+		id, err := svc.ds.GetHostGoogleDeviceID(ctx, host.ID)
+		if err != nil {
+			return nil, ctxerr.Wrap(ctx, err, "get host google device id")
+		}
+		googleDeviceID = &id
+	}
+
 	customHostVitals, err := svc.ds.GetHostCustomHostVitals(ctx, host.ID)
 	if err != nil {
 		return nil, ctxerr.Wrap(ctx, err, "get custom host vitals for host")
@@ -2309,6 +2319,7 @@ func (svc *Service) getHostDetails(ctx context.Context, host *fleet.Host, opts f
 		LastMDMEnrollmentType:         mdmEnrollmentType,
 		MDMEnrollmentHardwareAttested: mdmHardwareAttested,
 		ConditionalAccessBypassed:     conditionalAccessBypassed,
+		GoogleDeviceID:                googleDeviceID,
 		OSUpdateMinimumVersion:        osUpdateMinVersion,
 		OSUpdateDeadline:              osUpdateDeadline,
 	}, nil
@@ -2900,6 +2911,82 @@ func (svc *Service) DeleteHostIDP(ctx context.Context, id uint) error {
 	}
 
 	return nil
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Put Host Google Device ID
+////////////////////////////////////////////////////////////////////////////////
+
+type putHostGoogleDeviceIDRequest struct {
+	ID uint `url:"id"`
+	// A pointer so that an omitted key is rejected instead of being treated as "", which clears the ID.
+	GoogleDeviceID *string `json:"google_device_id"`
+}
+
+type putHostGoogleDeviceIDResponse struct {
+	HostID         uint   `json:"host_id"`
+	GoogleDeviceID string `json:"google_device_id"`
+	Err            error  `json:"error,omitempty"`
+}
+
+func (r putHostGoogleDeviceIDResponse) Error() error { return r.Err }
+
+func putHostGoogleDeviceIDEndpoint(ctx context.Context, request any, svc fleet.Service) (fleet.Errorer, error) {
+	req := request.(*putHostGoogleDeviceIDRequest)
+	if err := svc.SetHostGoogleDeviceID(ctx, req.ID, req.GoogleDeviceID); err != nil {
+		return putHostGoogleDeviceIDResponse{Err: err}, nil
+	}
+	return putHostGoogleDeviceIDResponse{HostID: req.ID, GoogleDeviceID: *req.GoogleDeviceID}, nil
+}
+
+func (svc *Service) SetHostGoogleDeviceID(ctx context.Context, hostID uint, googleDeviceID *string) error {
+	if err := svc.authz.Authorize(ctx, &fleet.Host{}, fleet.ActionList); err != nil {
+		return err
+	}
+
+	host, err := svc.ds.HostLite(ctx, hostID)
+	if err != nil {
+		return ctxerr.Wrap(ctx, err, "get host")
+	}
+
+	// Authorize again with team loaded now that we have team_id
+	if err := svc.authz.Authorize(ctx, host, fleet.ActionWrite); err != nil {
+		return err
+	}
+
+	lic, err := svc.License(ctx)
+	if err != nil {
+		return err
+	}
+	if lic == nil || !lic.IsPremium() {
+		return fleet.ErrMissingLicense
+	}
+
+	if !fleet.IsMobilePlatform(host.Platform) {
+		return fleet.NewInvalidArgumentError("google_device_id", "Google device ID is only supported on iOS, iPadOS, and Android hosts.")
+	}
+	if googleDeviceID == nil {
+		return fleet.NewInvalidArgumentError("google_device_id", "google_device_id is required. Use \"\" to clear it.")
+	}
+	if strings.TrimSpace(*googleDeviceID) != *googleDeviceID {
+		return fleet.NewInvalidArgumentError("google_device_id", "Google device ID can't start or end with whitespace.")
+	}
+	if utf8.RuneCountInString(*googleDeviceID) > 255 {
+		return fleet.NewInvalidArgumentError("google_device_id", "Google device ID must be 255 characters or less.")
+	}
+
+	changed, err := svc.ds.SetHostGoogleDeviceID(ctx, hostID, *googleDeviceID)
+	if err != nil {
+		return err
+	}
+	if !changed || *googleDeviceID == "" {
+		return nil
+	}
+	return svc.NewActivity(ctx, authz.UserFromContext(ctx), fleet.ActivityTypeSetHostGoogleDeviceID{
+		HostID:          host.ID,
+		HostDisplayName: host.DisplayName(),
+		GoogleDeviceID:  *googleDeviceID,
+	})
 }
 
 ////////////////////////////////////////////////////////////////////////////////

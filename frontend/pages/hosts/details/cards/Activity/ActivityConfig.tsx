@@ -43,6 +43,7 @@ import RetrievedHostMyDeviceURLActivityItem from "./ActivityItems/RetrievedHostM
 import RotatedDiskEncryptionKeyActivityItem from "./ActivityItems/RotatedDiskEncryptionKey";
 import RotatedHostRecoveryLockPasswordActivityItem from "./ActivityItems/RotatedHostRecoveryLockPassword";
 import RotatedManagedLocalAccountPasswordActivityItem from "./ActivityItems/RotatedManagedLocalAccountPassword";
+import SetHostGoogleDeviceIdActivityItem from "./ActivityItems/SetHostGoogleDeviceIdActivityItem";
 import SetHostRecoveryLockPasswordActivityItem from "./ActivityItems/SetHostRecoveryLockPassword";
 import UnlockedHostActivityItem from "./ActivityItems/UnlockedHostActivityItem";
 import ViewedHostRecoveryLockPasswordActivityItem from "./ActivityItems/ViewedHostRecoveryLockPassword";
@@ -85,6 +86,7 @@ export const pastActivityComponentMap: Record<
   [ActivityType.RetrievedHostMyDeviceURL]: RetrievedHostMyDeviceURLActivityItem,
   [ActivityType.ViewedHostRecoveryLockPassword]: ViewedHostRecoveryLockPasswordActivityItem,
   [ActivityType.SetHostRecoveryLockPassword]: SetHostRecoveryLockPasswordActivityItem,
+  [ActivityType.SetHostGoogleDeviceId]: SetHostGoogleDeviceIdActivityItem,
   [ActivityType.RotatedHostRecoveryLockPassword]: RotatedHostRecoveryLockPasswordActivityItem,
   [ActivityType.RotatedDiskEncryptionKey]: RotatedDiskEncryptionKeyActivityItem,
   [ActivityType.FailedToRotateDiskEncryptionKey]: FailedToRotateDiskEncryptionKeyActivityItem,

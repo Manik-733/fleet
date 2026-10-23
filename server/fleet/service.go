@@ -514,6 +514,9 @@ type Service interface {
 	// mappings or DeviceMappingIDP for identity provider mappings.
 	SetHostDeviceMapping(ctx context.Context, id uint, email, source string) ([]*HostDeviceMapping, error)
 	DeleteHostIDP(ctx context.Context, id uint) error
+	// SetHostGoogleDeviceID binds an iOS, iPadOS or Android host to its device ID in Google. A different
+	// value than the stored one is refused with a 409; "" removes it and nil is rejected.
+	SetHostGoogleDeviceID(ctx context.Context, hostID uint, googleDeviceID *string) error
 	HostLiteByIdentifier(ctx context.Context, identifier string) (*HostLite, error)
 	// HostLiteByIdentifier returns a host and a subset of its fields from its id.
 	HostLiteByID(ctx context.Context, id uint) (*HostLite, error)

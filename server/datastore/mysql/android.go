@@ -189,6 +189,11 @@ func (ds *Datastore) NewAndroidHost(ctx context.Context, host *fleet.AndroidHost
 			host.Host.ID = existingID
 		}
 		host.Device.HostID = host.Host.ID
+		// Both branches can land on an existing row (the lookup above, or the insert's duplicate-key
+		// update), and either way this is a fresh enrollment.
+		if err := clearHostGoogleDeviceIDDB(ctx, tx, host.Host.ID); err != nil {
+			return err
+		}
 
 		err = upsertHostDisplayNames(ctx, tx, *host.Host)
 		if err != nil {
@@ -336,6 +341,9 @@ func (ds *Datastore) UpdateAndroidHost(ctx context.Context, host *fleet.AndroidH
 			// update host_mdm to set enrolled back to true
 			if err := upsertAndroidHostMDMInfoDB(ctx, tx, appCfg.ServerSettings.ServerURL, androidPersonalEnrollmentType(companyOwned), true, host.Host.ID); err != nil {
 				return ctxerr.Wrap(ctx, err, "update Android host MDM info")
+			}
+			if err := clearHostGoogleDeviceIDDB(ctx, tx, host.Host.ID); err != nil {
+				return err
 			}
 			// Certificate template records for re-enrolling hosts are created by the caller
 			// (Service.updateHost) via CreatePendingCertificateTemplatesForNewHost after this

@@ -1810,6 +1810,9 @@ func updateMDMAppleHostDB(
 	if _, err := tx.ExecContext(ctx, `DELETE FROM host_mdm_actions WHERE host_id = ?`, hostID); err != nil {
 		return ctxerr.Wrap(ctx, err, "error clearing mdm apple host_mdm_actions")
 	}
+	if err := clearHostGoogleDeviceIDDB(ctx, tx, hostID); err != nil {
+		return err
+	}
 
 	if transitioningToPersonal {
 		if err := deleteHostMDMAppleDeviceVitalsDB(ctx, tx, previousUUID); err != nil {

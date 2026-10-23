@@ -52,6 +52,7 @@ export enum ActivityType {
   RetrievedHostMyDeviceURL = "retrieved_host_my_device_url",
   ViewedHostRecoveryLockPassword = "viewed_host_recovery_lock_password",
   SetHostRecoveryLockPassword = "set_host_recovery_lock_password",
+  SetHostGoogleDeviceId = "set_host_google_device_id",
   RotatedHostRecoveryLockPassword = "rotated_host_recovery_lock_password",
   RotatedDiskEncryptionKey = "rotated_disk_encryption_key",
   FailedToRotateDiskEncryptionKey = "failed_to_rotate_disk_encryption_key",
@@ -254,6 +255,7 @@ export type IHostPastActivityType =
   | ActivityType.RetrievedHostMyDeviceURL
   | ActivityType.ViewedHostRecoveryLockPassword
   | ActivityType.SetHostRecoveryLockPassword
+  | ActivityType.SetHostGoogleDeviceId
   | ActivityType.RotatedHostRecoveryLockPassword
   | ActivityType.RotatedDiskEncryptionKey
   | ActivityType.FailedToRotateDiskEncryptionKey
@@ -467,6 +469,7 @@ export interface IActivityDetails {
   custom_host_vital_name?: string;
   domain?: string;
   host_idp_username?: string;
+  google_device_id?: string;
   idp_full_name?: string;
   idp_email?: string;
   replaced_idp_email?: string;
@@ -628,6 +631,7 @@ export const ACTIVITY_TYPE_TO_FILTER_LABEL: Record<ActivityType, string> = {
   retrieved_host_my_device_url: "Retrieved My device URL",
   viewed_host_recovery_lock_password: "Viewed Recovery Lock password",
   set_host_recovery_lock_password: "Set Recovery Lock password",
+  set_host_google_device_id: "Set Google device ID",
   rotated_host_recovery_lock_password:
     "Triggered Recovery Lock password rotation",
   enabled_recovery_lock_passwords: "Turned on Recovery Lock passwords",

@@ -269,6 +269,8 @@ type SetHostDeviceMappingFunc func(ctx context.Context, id uint, email string, s
 
 type DeleteHostIDPFunc func(ctx context.Context, id uint) error
 
+type SetHostGoogleDeviceIDFunc func(ctx context.Context, hostID uint, googleDeviceID *string) error
+
 type HostLiteByIdentifierFunc func(ctx context.Context, identifier string) (*fleet.HostLite, error)
 
 type HostLiteByIDFunc func(ctx context.Context, id uint) (*fleet.HostLite, error)
@@ -1415,6 +1417,9 @@ type Service struct {
 
 	DeleteHostIDPFunc        DeleteHostIDPFunc
 	DeleteHostIDPFuncInvoked bool
+
+	SetHostGoogleDeviceIDFunc        SetHostGoogleDeviceIDFunc
+	SetHostGoogleDeviceIDFuncInvoked bool
 
 	HostLiteByIdentifierFunc        HostLiteByIdentifierFunc
 	HostLiteByIdentifierFuncInvoked bool
@@ -3446,6 +3451,13 @@ func (s *Service) DeleteHostIDP(ctx context.Context, id uint) error {
 	s.DeleteHostIDPFuncInvoked = true
 	s.mu.Unlock()
 	return s.DeleteHostIDPFunc(ctx, id)
+}
+
+func (s *Service) SetHostGoogleDeviceID(ctx context.Context, hostID uint, googleDeviceID *string) error {
+	s.mu.Lock()
+	s.SetHostGoogleDeviceIDFuncInvoked = true
+	s.mu.Unlock()
+	return s.SetHostGoogleDeviceIDFunc(ctx, hostID, googleDeviceID)
 }
 
 func (s *Service) HostLiteByIdentifier(ctx context.Context, identifier string) (*fleet.HostLite, error) {
